@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Just+Me+Again+Down+Here&display=swap");
+
+@theme {
+    --font-family-justme: "Just Me Again Down Here", cursive;
+}
