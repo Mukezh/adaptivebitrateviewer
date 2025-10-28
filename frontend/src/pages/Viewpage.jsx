@@ -14,5 +14,22 @@ export const ViewPage = () => {
   }, []);
 
   console.log(data);
-  return <div>{data[0]}</div>;
+  return (
+    <div className="h-screen flex flex-col justify-center items-center  bg-[#F2EFCE]">
+      {data.length === 0 ? (
+        <div className="text-3xl">loading...</div>
+      ) : (
+        <div>
+          <h1 className="text-3xl pb-8 font-serif">Uploaded files</h1>
+          <div className="font-serif ">
+            {data[0].map((e, i) => (
+              <div className="hover:underline" key={i}>
+                {i + 1 + ". " + e}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
