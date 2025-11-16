@@ -1,62 +1,61 @@
-import { useEffect, useRef, useState } from "react";
-import Hls from "hls.js";
+import React, { useEffect, useRef } from "react";
+import shaka from "shaka-player/dist/shaka-player.ui";
 
-export default function VideoPlayer({ src }) {
+import "shaka-player/dist/controls.css";
+
+export default function ShakaVideoPlayer({ src }) {
   const videoRef = useRef(null);
-  const hlsRef = useRef(null);
+  const containerRef = useRef(null);
 
-  const [levels, setLevels] = useState([]);
-  const [currentLevel, setCurrentLevel] = useState(-1);
-
-  // TRUE only for real Safari (not Chrome/Edge)
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
+  console.log(src);
   useEffect(() => {
+    // Install polyfills
+    shaka.polyfill.installAll();
+
+    if (!shaka.Player.isBrowserSupported()) {
+      console.error("Browser not supported!");
+      return;
+    }
+
     const video = videoRef.current;
-    if (!video || !src) return;
+    const container = containerRef.current;
 
-    // cleanup old instance
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
+    // Create Player + UI overlay
+    const player = new shaka.Player(video);
+    const ui = new shaka.ui.Overlay(player, container, video);
 
-    if (src.endsWith(".m3u8")) {
-      if (isSafari) {
-        // REAL SAFARI → native playback
-        console.log("Using native Safari HLS");
-        video.src = src;
-      } else {
-        // CHROME / EDGE / FIREFOX → use hls.js
-        console.log("Using hls.js");
-        const hls = new Hls();
-        hlsRef.current = hls;
+    const controls = ui.getControls();
 
-        hls.loadSource(src);
-        hls.attachMedia(video);
+    // Enable ABR (Adaptive Bitrate)
+    player.configure({
+      abr: { enabled: true },
+    });
 
-        // Get HLS levels
-        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-          console.log("LEVELS FROM HLS:", data.levels);
-          setLevels(data.levels);
-          setCurrentLevel(-1);
-        });
-
-        // Error logging
-        hls.on(Hls.Events.ERROR, (evt, data) => {
-          console.error("HLS ERROR:", data);
-        });
-      }
-    } else {
-      video.src = src;
-    }
+    // Load the HLS stream (.m3u8)
+    player
+      .load(src)
+      .then(() => console.log("The video has now been loaded!"))
+      .catch((e) => console.error("Error loading video", e));
 
     return () => {
-      if (hlsRef.current) hlsRef.current.destroy();
+      controls.destroy();
+      player.destroy();
     };
   }, [src]);
 
   return (
-    <video ref={videoRef} controls autoPlay className="max-w-full max-h-full" />
+    <div
+      ref={containerRef}
+      className="shaka-video-container"
+      style={{ width: "100%", maxWidth: "1000px" }}
+    >
+      <video
+        ref={videoRef}
+        className="shaka-video rounded-xl"
+        // autoPlay
+        // controls
+        style={{ width: "100%", height: "auto", background: "black" }}
+      />
+    </div>
   );
 }

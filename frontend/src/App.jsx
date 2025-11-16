@@ -3,6 +3,9 @@ import Homepage from "./pages/Homepage";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { ViewPage } from "./pages/Viewpage";
 import VideoPlayer from "./components/VideoPlayer";
+import ViewPlayer from "./components/ViewPage";
+import "shaka-player/dist/controls.css";
+import { PlayerContainer } from "./components/Glass";
 
 function App() {
   return (
@@ -11,12 +14,8 @@ function App() {
       <Route path="/home" element={<Homepage />} />
       <Route path="/upload" element={<Card />} />
       <Route path="/view" element={<ViewPage />} />
-      <Route
-        path="hls"
-        element={
-          <VideoPlayer src="https://adaptive-bit-rate-s3.s3.us-east-1.amazonaws.com/hls/sample/master.m3u8" />
-        }
-      />
+      <Route path="hls" element={<ViewPlayer />} />
+      <Route path="/glass" element={<PlayerContainer />} />
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   );
